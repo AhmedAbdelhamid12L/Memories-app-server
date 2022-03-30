@@ -4,6 +4,7 @@ import express from "express";
 import cors from "cors";
 import dbConnection from "./configration/config";
 import postRoutes from "./apps/posts/routes/postsRoutes";
+import userRoutes from "./apps/users/routes/usersRoutes";
 
 const app = express();
 
@@ -16,6 +17,7 @@ const port = process.env.PORT || 5000;
 
 app.get("/", (req, res) => res.send("Hello To Memorise API!"));
 app.use("/posts", postRoutes);
+app.use("/users", userRoutes);
 
 app.listen(port, () => {
   console.log(`App listening in port ${port}!`);

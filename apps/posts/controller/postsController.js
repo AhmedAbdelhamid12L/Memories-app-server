@@ -16,7 +16,7 @@ export const createPost = async (req, res) => {
   // const { title, message, creator, tags, selectedFile } = req.body;
   const post = req.body;
   try {
-    const newPost = new Post(post);
+    const newPost = new Post({ ...post, creator: req.userId });
     const data = await newPost.save();
     res.status(StatusCodes.CREATED).json(data);
   } catch (error) {
@@ -68,14 +68,18 @@ export const deletePost = async (req, res) => {
 export const likePost = async (req, res) => {
   const { id } = req.params;
   try {
+    if (!req.userId)
+      return res
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ message: "UNAUTHENTICATED" });
     const post = await Post.findById(id);
-    const updatedPost = await Post.findByIdAndUpdate(
-      id,
-      {
-        likeCount: post.likeCount + 1,
-      },
-      { new: true }
-    );
+    const index = post.likes.findIndex((id) => id == String(req.userId));
+    if (index == -1) {
+      post.likes.push(req.userId);
+    } else {
+      post.likes = post.likes.filter((id) => id !== String(req.userId));
+    }
+    const updatedPost = await Post.findByIdAndUpdate(id, post, { new: true });
 
     if (post) {
       res.status(StatusCodes.OK).json(updatedPost);
